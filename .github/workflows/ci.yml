@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for secrets
+        run: |
+          set -u
+          PATTERN='(gsk_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{32,}|[0-9]{8,10}:[A-Za-z0-9_-]{35}|gh[pousr]_[A-Za-z0-9]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(^|[^0-9])([0-9]{1,3}\.){3}[0-9]{1,3}([^0-9]|$))'
+          # 0.0.0.0 и 127.0.0.1 — служебные адреса, не секреты
+          HITS=$(grep -rInE --exclude-dir=.git --exclude-dir=fixtures --exclude=ci.yml "$PATTERN" . | grep -vE '(^|[^0-9])(0\.0\.0\.0|127\.0\.0\.1)([^0-9]|$)' || true)
+          if [ -n "$HITS" ]; then
+            echo "$HITS"
+            echo "::error::Найдено похожее на секрет, IP или токен. Удали и сообщи владельцу."
+            exit 1
+          fi
+          if git ls-files | grep -E '(^|/)\.env$|\.db$|\.pem$|\.key$'; then
+            echo "::error::В репозитории лежит файл, которому тут не место (.env, .db, .pem, .key)."
+            exit 1
+          fi
+          echo "Секретов не найдено."
