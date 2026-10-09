@@ -1,0 +1,123 @@
+# Реестр моделей. Меняется без перезапуска (бот перечитывает файл раз в минуту).
+# Цены — USD за 1 млн токенов (вход / выход). Цифры ориентировочные; экзамен и журнал их не используют,
+# они нужны только для выбора самой дешёвой подходящей модели. Проверяй перед запуском.
+# tier: free — бесплатный лимит, paid — платный ключ.
+# quota: суточный лимит запросов (free). После исчерпания модель выбывает до полуночи UTC.
+# quality: стартовый балл 0–100 (перезаписывается экзаменом).
+# skills: text, long, json, vision, stt
+
+providers:
+  groq:
+    kind: openai            # OpenAI-совместимый API
+    base_url: https://api.groq.com/openai/v1
+    api_key_env: GROQ_API_KEY
+  google:
+    kind: openai
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    api_key_env: GOOGLE_API_KEY
+  openrouter:
+    kind: openai
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+  anthropic:
+    kind: anthropic
+    base_url: https://api.anthropic.com
+    api_key_env: ANTHROPIC_API_KEY
+
+models:
+  # ---- бесплатные (по одному аккаунту на провайдера, честно) ----
+  - id: groq/llama-3.3-70b-versatile
+    provider: groq
+    model: llama-3.3-70b-versatile
+    tier: free
+    quota_per_day: 1000
+    price_in: 0
+    price_out: 0
+    quality: 70
+    speed: fast
+    skills: [text, json]
+  - id: groq/llama-3.1-8b-instant
+    provider: groq
+    model: llama-3.1-8b-instant
+    tier: free
+    quota_per_day: 14000
+    price_in: 0
+    price_out: 0
+    quality: 50
+    speed: fast
+    skills: [text, json]
+  - id: groq/gpt-oss-120b
+    provider: groq
+    model: openai/gpt-oss-120b
+    tier: free
+    quota_per_day: 1000
+    price_in: 0
+    price_out: 0
+    quality: 75
+    speed: fast
+    skills: [text, json, long]
+  - id: groq/gpt-oss-20b
+    provider: groq
+    model: openai/gpt-oss-20b
+    tier: free
+    quota_per_day: 1000
+    price_in: 0
+    price_out: 0
+    quality: 62
+    speed: fast
+    skills: [text, json]
+  - id: google/gemini-2.5-flash
+    provider: google
+    model: gemini-2.5-flash
+    tier: free
+    quota_per_day: 250
+    price_in: 0
+    price_out: 0
+    quality: 75
+    speed: fast
+    skills: [text, long, json, vision]
+  - id: google/gemma-3-27b-it
+    provider: google
+    model: gemma-3-27b-it
+    tier: free
+    quota_per_day: 14000
+    price_in: 0
+    price_out: 0
+    quality: 60
+    speed: fast
+    skills: [text, json]
+
+  # ---- платные ----
+  - id: anthropic/claude-haiku
+    provider: anthropic
+    model: claude-haiku-5-5
+    tier: paid
+    price_in: 1.0
+    price_out: 5.0
+    quality: 80
+    speed: fast
+    skills: [text, long, json, vision]
+  - id: anthropic/claude-sonnet
+    provider: anthropic
+    model: claude-sonnet-5-5
+    tier: paid
+    price_in: 3.0
+    price_out: 15.0
+    quality: 92
+    speed: medium
+    skills: [text, long, json, vision]
+
+# Голос → текст. Первый доступный выигрывает.
+stt:
+  - id: groq/whisper-large-v3-turbo
+    provider: groq
+    model: whisper-large-v3-turbo
+    tier: free
+    quota_per_day: 2000
+  - id: local/faster-whisper
+    provider: local
+    model: small
+    tier: free
+
+# Месячный потолок на платные модели, USD. Бот предупредит фаундера на 80 %.
+budget_usd_per_month: 20

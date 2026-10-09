@@ -1,0 +1,57 @@
+# Классы задач. Каждому — планка качества (min_quality, 0–100), потолок цены (max_price_out, USD/1M токенов выхода)
+# и обязательные умения. Диспетчер берёт самую дешёвую модель, которая держит планку.
+# force_tier: paid — всегда платная (инвестор, приёмка).
+
+classes:
+  welcome:            # первое знакомство, "что это за проект"
+    min_quality: 50
+    max_price_out: 0
+    skills: [text]
+    max_tokens: 400
+  chat:               # обычный разговор по хребту
+    min_quality: 60
+    max_price_out: 5
+    skills: [text]
+    max_tokens: 600
+  idea_extract:       # вытащить из реплики идею/вопрос, вернуть JSON
+    min_quality: 60
+    max_price_out: 5
+    skills: [text, json]
+    max_tokens: 300
+  digest:             # недельный дайджест идей для фаундера
+    min_quality: 80
+    max_price_out: 15
+    skills: [text, long]
+    max_tokens: 1500
+  translate:          # перевод реплики на язык собеседника
+    min_quality: 50
+    max_price_out: 1
+    skills: [text]
+    max_tokens: 500
+  investor:           # разговор с инвестором/партнёром — всегда сильная модель
+    min_quality: 85
+    force_tier: paid
+    skills: [text, long]
+    max_tokens: 800
+  review:             # приёмка блока работы
+    min_quality: 85
+    force_tier: paid
+    skills: [text, long, json]
+    max_tokens: 800
+  classify:           # определить класс задачи (крошечный запрос)
+    min_quality: 40
+    max_price_out: 0
+    skills: [text, json]
+    max_tokens: 20
+  exam_judge:         # судья на еженедельном экзамене моделей
+    min_quality: 85
+    force_tier: paid
+    skills: [text, json]
+    max_tokens: 200
+
+# Подсказки для быстрой классификации без ИИ (регулярки, нижний регистр).
+# Если ничего не подошло — спрашиваем модель класса classify.
+rules:
+  investor: ["инвест", "вложить", "доля", "раунд", "invest", "equity", "партнёр", "партнер"]
+  welcome:  ["/start", "что это", "расскажи о проекте", "what is this", "nima bu"]
+  translate: ["переведи", "translate", "tarjima"]

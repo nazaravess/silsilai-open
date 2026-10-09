@@ -1,0 +1,19 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - "80:8080"                 # API для Mini App (порт 80: хостинги сайта режут нестандартные исходящие)
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config      # реестр и хребет правятся без пересборки
+  exam:                           # еженедельный экзамен моделей (вс 03:00 UTC)
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    entrypoint: ["sh", "-c", "while true; do if [ \"$(date +%u%H)\" = \"703\" ]; then python -m hub.exam; sleep 3600; fi; sleep 600; done"]
